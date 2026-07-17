@@ -1,0 +1,19 @@
+{
+  "name": "s2f-duel-render-flat",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Flat Render upload for S2F Starblast duel host dashboard.",
+  "main": "server.protected.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.protected.js",
+    "check": "node --check server.protected.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "starblast-modding": "1.4.40-alpha6"
+  }
+}

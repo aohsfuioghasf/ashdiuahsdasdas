@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>S2F Duel Host</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="spacefx" aria-hidden="true">
+      <div class="spacefx-stars"></div>
+      <div class="spacefx-scan"></div>
+    </div>
+    <section class="login-view" id="loginView">
+      <form class="panel login-panel" id="loginForm">
+        <div class="panel-title">
+          <h2>Admin Login</h2>
+          <span>S2F Access</span>
+        </div>
+        <div class="controls">
+          <label>
+            <span>Username</span>
+            <input id="loginUsername" type="text" autocomplete="username" required>
+          </label>
+          <label>
+            <span>Password</span>
+            <input id="loginPassword" type="password" autocomplete="current-password" required>
+          </label>
+          <button class="primary" id="loginButton" type="submit">Enter Panel</button>
+          <p class="login-error" id="loginError"></p>
+        </div>
+      </form>
+    </section>
+
+    <main class="shell" id="dashboardShell" hidden>
+      <section class="topbar">
+        <div>
+          <p class="eyebrow">Starblast Mod Host</p>
+          <h1>S2F Duel Control</h1>
+        </div>
+        <div class="top-actions">
+          <div class="session-user" id="currentUser"></div>
+          <div class="status-card" id="statusCard">
+            <span class="pulse"></span>
+            <span id="statusText">Checking</span>
+          </div>
+          <button id="logoutButton" type="button">Logout</button>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="panel host-panel">
+          <div class="panel-title">
+            <h2>Host Game</h2>
+            <span id="runtimeText">duel.js</span>
+          </div>
+
+          <form id="startForm" class="controls">
+            <label>
+              <span>Region</span>
+              <select id="region">
+                <option>Europe</option>
+                <option>America</option>
+                <option>Asia</option>
+              </select>
+            </label>
+
+            <label>
+              <span>ECP Key</span>
+              <input id="ecpKey" type="password" autocomplete="off" placeholder="Use .env or paste for this run">
+            </label>
+
+            <div class="button-row">
+              <button class="primary" id="startButton" type="submit">Start Host</button>
+              <button class="danger" id="stopButton" type="button">Stop</button>
+            </div>
+          </form>
+
+          <div class="game-link" id="gameLinkBox">
+            <span>Game Link</span>
+            <a id="gameLink" href="#" target="_blank" rel="noreferrer">Waiting for Starblast link</a>
+          </div>
+
+          <div class="host-meta">
+            <div><span>Hosted By</span><strong id="hostedByText">-</strong></div>
+            <div><span>Started</span><strong id="startedAtText">-</strong></div>
+            <div><span>Last Control</span><strong id="lastControlText">-</strong></div>
+            <div><span>Logged In</span><strong id="activeUsersText">-</strong></div>
+          </div>
+        </article>
+
+        <article class="panel admin-panel">
+          <div class="panel-title">
+            <h2>Admin Panel</h2>
+            <span id="adminStatus">Waiting for host</span>
+          </div>
+
+          <div class="admin-tabs" id="adminTabs">
+            <button class="active" data-tab="players" type="button">Players</button>
+            <button data-tab="moderation" type="button">Moderation</button>
+            <button data-tab="match" type="button">Match Control</button>
+            <button data-tab="training" type="button">Training</button>
+            <button data-tab="leaderboard" type="button">Leaderboard</button>
+            <button data-tab="logs" type="button">Admin Log</button>
+            <button data-tab="settings" type="button">Settings</button>
+          </div>
+
+          <div class="admin-stats">
+            <div><span>Online</span><strong id="statOnline">0</strong></div>
+            <div><span>Banned</span><strong id="statBanned">0</strong></div>
+            <div><span>Forced</span><strong id="statForced">0</strong></div>
+            <div><span>Frozen</span><strong id="statFrozen">0</strong></div>
+            <div><span>Matches</span><strong id="statMatches">0</strong></div>
+            <div><span>Paused</span><strong id="statPaused">No</strong></div>
+          </div>
+
+          <div class="admin-stack">
+            <section class="admin-tabpage active" id="admin-tab-players">
+              <div class="admin-block">
+                <h3>Target Player</h3>
+                <div class="admin-row selected-row">
+                  <label>
+                    <span>Player</span>
+                    <select id="selectedPlayer"></select>
+                  </label>
+                  <button class="warn" id="kickButton" type="button">Kick</button>
+                  <button class="danger" id="banButton" type="button">Ban</button>
+                  <button id="grantAdminButton" type="button">Grant Admin</button>
+                  <button id="removeAdminButton" type="button">Remove Admin</button>
+                  <button class="primary" id="adminShipButton" type="button">Admin Ship</button>
+                </div>
+              </div>
+
+              <div class="admin-block">
+                <h3>Private Message / Announcement</h3>
+                <div class="admin-row message-row">
+                  <label>
+                    <span>Private Message</span>
+                    <input id="privateMessage" type="text" maxlength="220" placeholder="Message to selected player">
+                  </label>
+                  <label>
+                    <span>Seconds</span>
+                    <input id="privateDuration" type="number" min="1" max="30" value="6">
+                  </label>
+                  <button class="primary" id="privateButton" type="button">Send PM</button>
+                  <label>
+                    <span>Announcement</span>
+                    <input id="announcement" type="text" maxlength="220" placeholder="Message to all players">
+                  </label>
+                  <label>
+                    <span>Seconds</span>
+                    <input id="announcementDuration" type="number" min="2" max="30" value="6">
+                  </label>
+                  <button class="primary" id="announceButton" type="button">Announce</button>
+                </div>
+              </div>
+
+              <div class="admin-block">
+                <h3>Banned Players</h3>
+                <div class="admin-row ban-row">
+                  <label>
+                    <span>Banned List</span>
+                    <select id="bannedPlayer"></select>
+                  </label>
+                  <button class="primary" id="unbanButton" type="button">Unban</button>
+                  <button class="warn" id="kickBannedButton" type="button">Kick Banned</button>
+                </div>
+              </div>
+
+              <div class="admin-block">
+                <h3>Live Players <span id="playerCount">0 online</span></h3>
+                <div class="player-table-wrap">
+                  <table class="player-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>State</th>
+                        <th>W</th>
+                        <th>L</th>
+                        <th>STR</th>
+                      </tr>
+                    </thead>
+                    <tbody id="playersBody">
+                      <tr><td colspan="6">Start host to see players.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-tabpage" id="admin-tab-moderation">
+              <div class="admin-block">
+                <h3>Spectate / Freeze / Teleport</h3>
+                <div class="admin-row selected-row">
+                  <button id="spectateButton" type="button">Force Spectate</button>
+                  <button id="releaseSpectateButton" type="button">Release Player</button>
+                  <button id="forceAllSpectateButton" type="button">Everyone Spectate</button>
+                  <button id="releaseAllSpectateButton" type="button">Release All</button>
+                  <button id="freezeButton" type="button">Freeze</button>
+                  <button id="unfreezeButton" type="button">Unfreeze</button>
+                  <button id="lobbyButton" type="button">Selected To Lobby</button>
+                  <button id="allLobbyButton" type="button">Everyone To Lobby</button>
+                  <button class="warn" id="pauseButton" type="button">Pause</button>
+                  <button class="primary" id="resumeButton" type="button">Resume</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-tabpage" id="admin-tab-match">
+              <div class="admin-block">
+                <h3>Force Duel</h3>
+                <div class="admin-row duel-row">
+                  <label>
+                    <span>Side A</span>
+                    <select id="leftPlayer"></select>
+                  </label>
+                  <label>
+                    <span>Side B</span>
+                    <select id="rightPlayer"></select>
+                  </label>
+                  <label>
+                    <span>Rounds</span>
+                    <input id="rounds" type="number" min="1" max="25" value="1">
+                  </label>
+                  <button class="primary" id="forceDuelButton" type="button">Start Duel</button>
+                </div>
+              </div>
+
+              <div class="admin-block">
+                <h3>Close Countdown / Podium</h3>
+                <div class="admin-row match-row">
+                  <label>
+                    <span>Close Seconds</span>
+                    <input id="closeSeconds" type="number" min="1" max="300" value="15">
+                  </label>
+                  <label>
+                    <span>Close Message</span>
+                    <input id="closeMessage" type="text" value="Closing mod">
+                  </label>
+                  <button class="danger" id="closeCountdownButton" type="button">Countdown</button>
+                  <button id="cancelCloseButton" type="button">Cancel Close</button>
+                  <label>
+                    <span>End Minutes</span>
+                    <input id="endMinutes" type="number" min="0.1" max="240" step="0.1" value="10">
+                  </label>
+                  <label>
+                    <span>Stop Delay</span>
+                    <input id="endStopDelay" type="number" min="5" max="120" value="30">
+                  </label>
+                  <label>
+                    <span>Title</span>
+                    <input id="endTitle" type="text" value="FINAL RESULTS">
+                  </label>
+                  <button class="warn" id="endTimerButton" type="button">Start Timer</button>
+                  <button class="primary" id="showPodiumButton" type="button">Show Podium</button>
+                  <button id="cancelEndButton" type="button">Cancel End</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-tabpage" id="admin-tab-training">
+              <div class="admin-block">
+                <h3>Training Arena Aliens</h3>
+                <div class="training-counter">
+                  <button class="danger" data-alien-step="-2" type="button">-2</button>
+                  <button data-alien-step="-1" type="button">-1</button>
+                  <strong id="trainingLive">4 / P</strong>
+                  <button class="primary" data-alien-step="1" type="button">+1</button>
+                  <button class="primary" data-alien-step="2" type="button">+2</button>
+                </div>
+                <div class="admin-row duel-row">
+                  <label>
+                    <span>Aliens Per Player</span>
+                    <input id="trainingAliens" type="number" min="1" max="50" value="4">
+                  </label>
+                  <button class="primary" id="trainingApplyButton" type="button">Apply</button>
+                  <label>
+                    <span>Total Cap</span>
+                    <input id="trainingCap" type="number" min="4" max="200" value="80">
+                  </label>
+                  <button id="trainingCapButton" type="button">Apply Cap</button>
+                  <button class="danger" id="clearTrainingButton" type="button">Clear Aliens</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-tabpage" id="admin-tab-leaderboard">
+              <div class="admin-block">
+                <h3>Leaderboard</h3>
+                <div class="admin-row ban-row">
+                  <button id="clearPlayerHistoryButton" type="button">Clear Selected History</button>
+                  <button id="clearGlobalHistoryButton" type="button">Clear Global History</button>
+                  <button class="danger" id="resetStatsButton" type="button">Reset Stats</button>
+                </div>
+                <div class="admin-list" id="leaderboardList"></div>
+                <h3>Match History</h3>
+                <div class="admin-list" id="historyList"></div>
+              </div>
+            </section>
+
+            <section class="admin-tabpage" id="admin-tab-logs">
+              <div class="admin-block">
+                <h3>Admin Log</h3>
+                <button id="clearLogButton" type="button">Clear Log</button>
+                <div class="admin-list" id="adminLogList"></div>
+              </div>
+            </section>
+
+            <section class="admin-tabpage" id="admin-tab-settings">
+              <div class="admin-block">
+                <h3>Settings</h3>
+                <div class="admin-row duel-row">
+                  <label>
+                    <span>Rematch Vote Window</span>
+                    <input id="rematchSeconds" type="number" min="5" max="90" value="18">
+                  </label>
+                  <button class="primary" id="rematchApplyButton" type="button">Apply</button>
+                  <button id="refreshAdminButton" type="button">Refresh Panel</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </article>
+
+      </section>
+    </main>
+    <script src="/app.protected.js"></script>
+  </body>
+</html>
