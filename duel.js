@@ -1,33 +1,39 @@
 (function() {
-    var checkInterval = setInterval(function() {
-        if (typeof THREE !== 'undefined' && THREE.WebGLRenderer && THREE.WebGLShader) {
-            clearInterval(checkInterval);
+    var sanitizeS2FShaderSource = function(source) {
+        if (typeof source !== "string") return source;
+        return source
+            .replace(/6\.666666666666667\.0/g, "6.6666666666666670")
+            .replace(/(\d+\.\d+)\.(\d+)/g, function(_match, left, right) { return left + right; })
+            .replace(/(\d+\.\d+)\.(?=[^0-9]|$)/g, "$1")
+            .replace(/\.\.+/g, ".");
+    };
+
+    var patchShaderSource = function(proto) {
+        if (!proto || proto.__s2fShaderSourcePatched || typeof proto.shaderSource !== "function") return;
+        var originalShaderSource = proto.shaderSource;
+        proto.shaderSource = function(shader, source) {
+            return originalShaderSource.call(this, shader, sanitizeS2FShaderSource(source));
+        };
+        proto.__s2fShaderSourcePatched = true;
+    };
+
+    var patchThree = function() {
+        if (typeof WebGLRenderingContext !== "undefined") patchShaderSource(WebGLRenderingContext.prototype);
+        if (typeof WebGL2RenderingContext !== "undefined") patchShaderSource(WebGL2RenderingContext.prototype);
+
+        if (typeof THREE !== "undefined" && THREE.WebGLShader && !THREE.__s2fShaderPatched) {
             var originalWebGLShader = THREE.WebGLShader;
             THREE.WebGLShader = function(gl, type, source) {
-                var sanitized = source;
-                sanitized = sanitized.replace(/(\d+\.\d+)\.(\d+)/g, function(match, a, b) { return a + b; });
-                sanitized = sanitized.replace(/(\d+\.\d+)\./g, '$1');
-                sanitized = sanitized.replace(/\.(\d+\.\d+)/g, '.$1');
-                sanitized = sanitized.replace(/\.\.+/g, '.');
-                sanitized = sanitized.replace(/(\d+\.\d+)\.(\d+)/g, '$1$2');
-                sanitized = sanitized.replace(/6\.666666666666667\.0/g, '6.6666666666666670');
-                sanitized = sanitized.replace(/(\d+\.\d+)\.(\d+)/g, '$1$2');
-                return originalWebGLShader.call(this, gl, type, sanitized);
+                return originalWebGLShader.call(this, gl, type, sanitizeS2FShaderSource(source));
             };
             THREE.WebGLShader.prototype = originalWebGLShader.prototype;
-            if (THREE.WebGLProgram) {
-                var originalProgram = THREE.WebGLProgram;
-                THREE.WebGLProgram = function(renderer, cacheKey, parameters, bindingStates) {
-                    if (parameters && parameters.shader) {
-                        if (parameters.shader.vertexShader) parameters.shader.vertexShader = parameters.shader.vertexShader.replace(/(\d+\.\d+)\.(\d+)/g, '$1$2');
-                        if (parameters.shader.fragmentShader) parameters.shader.fragmentShader = parameters.shader.fragmentShader.replace(/(\d+\.\d+)\.(\d+)/g, '$1$2');
-                    }
-                    return originalProgram.call(this, renderer, cacheKey, parameters, bindingStates);
-                };
-                THREE.WebGLProgram.prototype = originalProgram.prototype;
-            }
+            THREE.__s2fShaderPatched = true;
         }
-    }, 16);
+    };
+
+    patchThree();
+    var checkInterval = setInterval(patchThree, 16);
+    setTimeout(function() { clearInterval(checkInterval); }, 10000);
 })();
 
 // ============================================================
